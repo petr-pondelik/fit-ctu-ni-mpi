@@ -7,7 +7,6 @@ from Matrix.InputSystem import InputSystem
 class Algorithm:
 
     eqSystem: InputSystem
-    Xk_1: np.array
     Xk: np.array
     Q: np.array
     maxK: int
@@ -20,21 +19,20 @@ class Algorithm:
     def init(self, eqSystem: InputSystem):
         np.seterr(all='raise')
         self.eqSystem = eqSystem
-        self.Xk_1 = [[0] for i in range(self.eqSystem.n)]
+        self.Xk = [[0] for i in range(self.eqSystem.n)]
 
     def core(self):
         qInv: np.array = linalg.inv(self.Q)
         for i in range(1, self.maxK+1):
             try:
                 qInvQA = np.matmul(qInv, (self.Q - self.eqSystem.A))
-                self.Xk = np.matmul(qInvQA, self.Xk_1) + np.matmul(qInv, self.eqSystem.b)
+                self.Xk = np.matmul(qInvQA, self.Xk) + np.matmul(qInv, self.eqSystem.b)
                 Rk = np.matmul(self.eqSystem.A, self.Xk) - self.eqSystem.b
                 precision: float = linalg.norm(Rk) / linalg.norm(self.eqSystem.b)
                 if precision < self.requiredPrecision:
                     print('Step: {}'.format(i))
                     print('Precision: {}'.format(precision))
                     return self.Xk
-                self.Xk_1 = self.Xk
             except FloatingPointError:
                 print('Solution overflow after {} steps.'.format(i))
                 return None
