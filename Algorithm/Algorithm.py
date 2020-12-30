@@ -2,7 +2,6 @@ import copy
 import numpy as np
 from numpy import linalg
 from Matrix.InputSystem import InputSystem
-from Matrix.Norm import Norm
 
 
 class Algorithm:
@@ -14,15 +13,16 @@ class Algorithm:
     maxK: int
     requiredPrecision: float
 
+    def __init__(self, maxK: int, requiredPrecision: float):
+        self.maxK = maxK
+        self.requiredPrecision = requiredPrecision
+
     def init(self, eqSystem: InputSystem):
-        print('Init')
         self.eqSystem = eqSystem
-        self.maxK = 1000
-        self.requiredPrecision = 0.000001
         self.Xk_1 = [[0] for i in range(self.eqSystem.n)]
 
     def core(self):
-        print('{}: {}'.format(0, self.Xk_1))
+        # print('{}: {}'.format(0, self.Xk_1))
         qInv: np.array = linalg.inv(self.Q)
         for i in range(1, self.maxK+1):
             qInvQA = np.matmul(qInv, (self.Q - self.eqSystem.A))
@@ -33,9 +33,12 @@ class Algorithm:
             #     print('Residuum: {}'.format(Rk))
             #     print('Precision: {}'.format(precision))
             if precision < self.requiredPrecision:
-                print(i)
+                print('Jacobi')
+                print('Step: {}'.format(i))
+                print('Precision: {}'.format(precision))
                 return self.Xk
             self.Xk_1 = self.Xk
+        print('Jacobi diverges')
         return None
 
     def JacobiMatrix(self):

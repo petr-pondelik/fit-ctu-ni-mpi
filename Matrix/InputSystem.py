@@ -14,9 +14,9 @@ class InputSystem:
     D: np.array
     U: np.array
 
-    def __init__(self):
-        self.n = 20
-        self.gamma = 1.0
+    def __init__(self, n: int, gamma: float):
+        self.n = n
+        self.gamma = gamma
         self.A = np.array(self.constructA())
         self.b = np.array(self.constructB())
         self.L = self.extractL()
