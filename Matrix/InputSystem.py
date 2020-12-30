@@ -43,29 +43,36 @@ class InputSystem:
     def constructB(self) -> List[List[float]]:
         b: List[List[float]] = [[] for i in range(self.n)]
         for i in range(self.n):
+            # Set border values to gamma - 1
             if i == 0 or i == (self.n-1):
                 b[i].append(self.gamma - 1)
             else:
+                # Set inner values to gamma -2
                 b[i].append(self.gamma - 2)
         return b
 
     # Extract L part from A matrix
     def extractL(self) -> np.array:
+        # Make a copy of A
         L: np.array = copy.deepcopy(self.A)
         for i in range(self.n):
             for j in range(self.n):
+                # Set values under diagonal to 0
                 if i <= j:
                     L[i][j] = 0
         return L
 
     # Extract D part from A matrix
     def extractD(self) -> np.array:
+        # Make a copy of A
         D: np.array = copy.deepcopy(self.A)
         for i in range(self.n):
             for j in range(self.n):
+                # Set values except the diagonal values to 0
                 if i != j:
                     D[i][j] = 0
         return D
 
     def extractU(self) -> np.array:
+        # Return matrix containing only values over the diagonal
         return self.A - self.L - self.D
