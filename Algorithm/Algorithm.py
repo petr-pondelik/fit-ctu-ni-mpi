@@ -18,27 +18,27 @@ class Algorithm:
         self.requiredPrecision = requiredPrecision
 
     def init(self, eqSystem: InputSystem):
+        np.seterr(all='raise')
         self.eqSystem = eqSystem
         self.Xk_1 = [[0] for i in range(self.eqSystem.n)]
 
     def core(self):
-        # print('{}: {}'.format(0, self.Xk_1))
         qInv: np.array = linalg.inv(self.Q)
         for i in range(1, self.maxK+1):
-            qInvQA = np.matmul(qInv, (self.Q - self.eqSystem.A))
-            self.Xk = np.matmul(qInvQA, self.Xk_1) + np.matmul(qInv, self.eqSystem.b)
-            Rk = np.matmul(self.eqSystem.A, self.Xk) - self.eqSystem.b
-            precision: float = linalg.norm(Rk) / linalg.norm(self.eqSystem.b)
-            # if i < 1000:
-            #     print('Residuum: {}'.format(Rk))
-            #     print('Precision: {}'.format(precision))
-            if precision < self.requiredPrecision:
-                print('Jacobi')
-                print('Step: {}'.format(i))
-                print('Precision: {}'.format(precision))
-                return self.Xk
-            self.Xk_1 = self.Xk
-        print('Jacobi diverges')
+            try:
+                qInvQA = np.matmul(qInv, (self.Q - self.eqSystem.A))
+                self.Xk = np.matmul(qInvQA, self.Xk_1) + np.matmul(qInv, self.eqSystem.b)
+                Rk = np.matmul(self.eqSystem.A, self.Xk) - self.eqSystem.b
+                precision: float = linalg.norm(Rk) / linalg.norm(self.eqSystem.b)
+                if precision < self.requiredPrecision:
+                    print('Step: {}'.format(i))
+                    print('Precision: {}'.format(precision))
+                    return self.Xk
+                self.Xk_1 = self.Xk
+            except FloatingPointError:
+                print('Solution overflow after {} steps.'.format(i))
+                return None
+        print('Solution not found after {} steps.'.format(self.maxK))
         return None
 
     def JacobiMatrix(self):
@@ -48,11 +48,13 @@ class Algorithm:
         self.Q = self.eqSystem.D + self.eqSystem.L
 
     def Jacobi(self, eqSystem: InputSystem):
+        print('Jacobi')
         self.init(eqSystem)
         self.JacobiMatrix()
         return self.core()
 
     def GaussSeidel(self, eqSystem: InputSystem):
+        print('GaussSeidel')
         self.init(eqSystem)
         self.GaussSeidelMatrix()
         return self.core()
